@@ -1,0 +1,15 @@
+CALCULATION CRITERIA OF CODEFORCES CONTESTS:
+
+The points of Codeforces are calculated as follows:
+1. Max points is calculated
+2. Normal distribution graph is plotted as follws:
+	On X-axis: points[0,max_points]
+	On Y-axis: frequency(no. of poeple who have secured that point)
+3. Weightage is assigned to different values n X-axis as 
+   W(0)=0;
+   W(max_points)=1;
+   W(max_frequency_point)=0.5;
+4. Let r=W(users_point) then
+	r*=10;
+	ans+=r;
+5. Insert ans into contribution table beside that user.
