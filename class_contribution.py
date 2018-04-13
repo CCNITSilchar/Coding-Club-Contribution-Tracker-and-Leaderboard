@@ -14,17 +14,27 @@ class contribution:
         self.conn.cursor.execute("SELECT scholar_id,codeforces_h  FROM student_info")
         self.scholar_id_and_handle =self.conn.cursor.fetchall()
 
+    def fetch_scholar_id_and_handle_for_new_user(self):
+        self.conn.cursor.execute("SELECT scholar_id,codeforces_h  FROM student_info WHERE validated_user=(%s) AND new_user=(%s)",("1","1"))
+        self.scholar_id_and_handle_new =self.conn.cursor.fetchall()
+
     def fetch_id_of_contest(self):
         self.conn.cursor.execute("SELECT id ,start_date, processed FROM codeforces_contests ")
         self.id_contest = self.conn.cursor.fetchall()
 
-    def generate_complete_url(self,id_of_contest):
-        self.fetch_scholar_id_and_handle()
+    def generate_complete_url(self,id_of_contest,status):
+        if(status=="old"):
+            self.fetch_scholar_id_and_handle()
+            self.list_of_scholar_id_and_handle=self.scholar_id_and_handle
+        else:
+            self.fetch_scholar_id_and_handle_for_new_user()
+            self.list_of_scholar_id_and_handle=self.scholar_id_and_handle_new
+
         self.id_of_contest=id_of_contest
         self.url="http://codeforces.com/api/contest.standings?contestId="
         self.url+=(self.id_of_contest+'&handles=')
         self.e=0
-        for self.row in self.scholar_id_and_handle:
+        for self.row in self.list_of_scholar_id_and_handle:
             self.scholar_no = self.row[0]
             self.c_h=str(self.row[1])
             if self.c_h!=None:
@@ -40,6 +50,14 @@ class contribution:
         self.conn.cursor.execute('''UPDATE codeforces_contests SET processed=
                   (%s) WHERE id=(%s)''',
                   (True,self.id_of_contest))
+        self.conn.db.commit()
+
+    def update_user_status(self):
+        self.fetch_scholar_id_and_handle_for_new_user();
+        for self.rows in self.scholar_id_and_handle_new :
+            self.conn.cursor.execute('''UPDATE student_info SET new_user=
+                      (%s) WHERE scholar_id=(%s)''',
+                      ("0",self.rows[0]))
         self.conn.db.commit()
     
     def select_scholar_id_of_a_handle(self,handle):
